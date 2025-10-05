@@ -1,0 +1,3 @@
+alertmanager/config.yml
+registry-data/
+*.log

@@ -1,0 +1,11 @@
+groups:
+  - name: HostResourceAlerts
+    rules:
+      - alert: HighCpuLoad
+        expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[1m])) * 100) > 80
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High CPU load on {{$labels.instance}}"
+          description: "CPU load is over 80% on instance {{$labels.instance}}."
