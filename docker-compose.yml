@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   prometheus:
     image: prom/prometheus:latest
@@ -34,16 +32,40 @@ services:
     ports:
       - "9093:9093"
     volumes:
-      - ./alertmanager:/etc/alertmanager
-    command:
-      - '--config.file=/etc/alertmanager/config.yml'
+      - ./alertmanager/config.yml:/etc/alertmanager/config.yml
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    depends_on:
+      - prometheus
     restart: unless-stopped
 
   registry:
     image: registry:2
-    container_name: docker-registry
+    container_name: registry
     ports:
-      - "5000:5000"
+      - "5002:5000"
     volumes:
       - ./registry-data:/var/lib/registry
+      - ./config.yml:/etc/docker/registry/config.yml
+    restart: unless-stopped
+
+  registry-ui:
+    image: joxit/docker-registry-ui:latest
+    container_name: registry-ui
+    ports:
+      - "5001:80"
+    environment:
+      - REGISTRY_TITLE=My Private Registry
+      - REGISTRY_URL=http://localhost:5002
+
+    depends_on:
+      - registry
     restart: unless-stopped
